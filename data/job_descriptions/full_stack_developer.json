@@ -1,0 +1,15 @@
+{
+  "job_title": "Full Stack Software Engineer",
+  "company": "Tech Innovations Inc.",
+  "min_cgpa": 7.0,
+  "max_backlogs": 0,
+  "relevant_clusters_only": true,
+  "skills": {
+    "JavaScript": 4,
+    "React": 4,
+    "NodeJS": 3,
+    "HTML_CSS": 4,
+    "SQL": 3,
+    "Git": 3
+  }
+}

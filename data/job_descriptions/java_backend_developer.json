@@ -1,0 +1,13 @@
+{
+  "job_title": "Enterprise Java Backend Developer",
+  "company": "FinTech Systems",
+  "min_cgpa": 7.0,
+  "max_backlogs": 0,
+  "relevant_clusters_only": true,
+  "skills": {
+    "Java": 4,
+    "SQL": 4,
+    "DSA": 4,
+    "Git": 3
+  }
+}

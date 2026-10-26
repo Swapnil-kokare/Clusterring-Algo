@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Placement Intelligence | AI Talent Clustering & Shortlisting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #070b14;
+      --bg-surface: #0e1526;
+      --card: rgba(16, 24, 44, 0.72);
+      --card-hover: rgba(24, 36, 66, 0.82);
+      --card-solid: #121c35;
+      --bd: rgba(255, 255, 255, 0.08);
+      --bd-glow: rgba(99, 102, 241, 0.4);
+      --tx: #f8fafc;
+      --tx-dim: #cbd5e1;
+      --tx-muted: #8492a6;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #f43f5e;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(192, 132, 252, 0.05) 0%, transparent 60%);
+      color: var(--tx);
+      display: flex;
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Sidebar */
+    nav {
+      width: 260px;
+      padding: 24px 16px;
+      background: rgba(10, 16, 31, 0.85);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--bd);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding: 0 8px;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #f8fafc, #c084fc);
+      -webkit-background-clip: text;
+      color: transparent;
+      line-height: 1.2;
+    }
+    .brand-sub { font-size: 11px; color: var(--tx-muted); font-weight: 500; }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--tx-muted);
+      margin: 12px 10px 8px;
+    }
+
+    .nav-menu { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--tx-dim);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav-item svg { width: 18px; height: 18px; stroke-width: 2; flex-shrink: 0; transition: transform 0.2s; }
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--tx);
+      transform: translateX(3px);
+    }
+    .nav-item.on {
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.22), rgba(99, 102, 241, 0.08));
+      color: #e0e7ff;
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+    .nav-item.on svg { stroke: #a5b4fc; transform: scale(1.08); }
+
+    .nav-footer {
+      padding: 14px 12px;
+      background: rgba(14, 21, 38, 0.6);
+      border: 1px solid var(--bd);
+      border-radius: var(--radius-sm);
+      margin-top: auto;
+    }
+    .nav-footer-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 32px 40px;
+      max-width: 1340px;
+      margin: 0 auto;
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    /* Screen Management */
+    .screen { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }
+    .screen.on { display: block; opacity: 1; transform: translateY(0); }
+
+    /* Screen Headers */
+    .screen-header { margin-bottom: 26px; }
+    .screen-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #c7d2fe;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .screen-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--tx);
+      margin-bottom: 6px;
+    }
+    .screen-desc { color: var(--tx-muted); font-size: 14.5px; max-width: 800px; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { border-color: rgba(255, 255, 255, 0.12); }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--tx);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .card-title svg { color: var(--primary-light); }
+
+    /* Grids & Layout */
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+
+    /* Buttons */
+    button, .btn {
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      border: 0;
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+      user-select: none;
+      text-decoration: none;
+    }
+    button:hover, .btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+    }
+    button:active, .btn:active { transform: translateY(0); }
+
+    button.g, .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--bd);
+      color: var(--tx-dim);
+      box-shadow: none;
+    }
+    button.g:hover, .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--tx);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    button.btn-accent {
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+    button.btn-accent:hover { box-shadow: 0 6px 18px rgba(6, 182, 212, 0.45); }
+
+    /* Inputs */
+    input, select, textarea {
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--tx);
+      background: rgba(10, 16, 31, 0.8);
+      border: 1px solid var(--bd);
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    /* Pill Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--bd);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--tx-dim);
+      margin: 2px;
+    }
+    .pill-highlight { background: rgba(99, 102, 241, 0.18); border-color: rgba(99, 102, 241, 0.4); color: #c7d2fe; }
+    .pill-success { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35); color: #6ee7b7; }
+    .pill.miss { background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.35); color: #fda4af; }
+
+    /* Stat Cards */
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: var(--bd-glow); }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon.indigo { background: rgba(99, 102, 241, 0.18); color: #818cf8; }
+    .stat-icon.cyan { background: rgba(6, 182, 212, 0.18); color: #22d3ee; }
+    .stat-icon.purple { background: rgba(192, 132, 252, 0.18); color: #d8b4fe; }
+    .stat-icon.emerald { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+    .stat-val { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--tx); line-height: 1.1; }
+    .stat-lbl { font-size: 12.5px; color: var(--tx-muted); margin-top: 2px; font-weight: 500; }
+
+    /* Tables */
+    .table-container { width: 100%; overflow-x: auto; border-radius: var(--radius-sm); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+    th {
+      padding: 12px 14px;
+      background: rgba(14, 21, 38, 0.6);
+      color: var(--tx-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--bd);
+      text-transform: uppercase;
+      font-size: 11.5px;
+      letter-spacing: 0.05em;
+    }
+    td { padding: 13px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); vertical-align: middle; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Score Progress Bar */
+    .bar {
+      height: 7px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+      width: 110px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* JSON Box */
+    .json-box {
+      width: 100%;
+      height: 170px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      background: #090e1c;
+      color: #93c5fd;
+      border: 1px solid var(--bd);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      line-height: 1.5;
+      resize: vertical;
+      margin-top: 10px;
+    }
+
+    /* Hero Banner for Landing Page */
+    .hero {
+      position: relative;
+      padding: 48px 40px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(26, 36, 70, 0.6) 0%, rgba(14, 20, 38, 0.8) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 99px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #a5b4fc;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      background: linear-gradient(120deg, #ffffff 40%, #c084fc 80%, #67e8f9 100%);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--tx-dim);
+      max-width: 760px;
+      line-height: 1.6;
+      margin-bottom: 26px;
+    }
+    .hero-cta-group { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    /* Feature Cards on Landing Page */
+    .feat-card {
+      background: rgba(16, 24, 44, 0.6);
+      border: 1px solid var(--bd);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+    .feat-card:hover {
+      background: rgba(22, 33, 62, 0.8);
+      border-color: rgba(99, 102, 241, 0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .feat-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(99, 102, 241, 0.16);
+      color: #818cf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feat-title { font-size: 16px; font-weight: 700; color: var(--tx); margin-bottom: 8px; }
+    .feat-desc { font-size: 13.5px; color: var(--tx-muted); line-height: 1.5; }
+
+    /* Modal for Adding Students */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-window {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      animation: modalFadeIn 0.25s ease;
+    }
+    @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 20px; font-weight: 800; color: var(--tx); }
+    .modal-close {
+      background: transparent;
+      border: 0;
+      color: var(--tx-muted);
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px;
+      box-shadow: none;
+    }
+    .modal-close:hover { color: var(--tx); transform: none; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: var(--tx-dim); margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .skill-slider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #090e1c;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--bd);
+    }
+    .skill-slider-item { font-size: 12px; }
+    .skill-slider-item span { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--tx-dim); }
+
+    /* Upload Drag Drop Zone */
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      background: rgba(14, 21, 38, 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropzone:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      nav {
+        width: 100%;
+        height: auto;
+        position: static;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+      }
+      .brand { margin-bottom: 0; }
+      .nav-menu { flex-direction: row; flex-wrap: wrap; }
+      .nav-label, .nav-footer { display: none; }
+      main { padding: 20px 16px; }
+      .hero { padding: 30px 20px; }
+      .hero-title { font-size: 26px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Sidebar -->
+  <nav>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">SmartPlacement</div>
+        <div class="brand-sub">Intelligence Platform</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Navigation</div>
+    <div class="nav-menu">
+      <div class="nav-item on" data-target="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Overview & Home
+      </div>
+      <div class="nav-item" data-target="students">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Student Directory
+      </div>
+      <div class="nav-item" data-target="clusters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Skill Clusters (PCA)
+      </div>
+      <div class="nav-item" data-target="compare">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Model Benchmark
+      </div>
+      <div class="nav-item" data-target="match">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Job Description Match
+      </div>
+    </div>
+
+    <div class="nav-footer">
+      <div class="nav-footer-status">
+        <div class="pulse-dot"></div>
+        <span>ML Engine Active</span>
+      </div>
+      <div style="font-size:11px; color:var(--tx-muted); margin-top:4px">v2.4 · Flask + scikit-learn</div>
+    </div>
+  </nav>
+
+  <!-- Main Content Areas -->
+  <main>
+
+    <!-- 1. LANDING PAGE & OVERVIEW SCREEN -->
+    <section id="screen-home" class="screen on">
+      <div class="hero">
+        <div class="hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Next-Gen Placement Intelligence Platform
+        </div>
+        <h1 class="hero-title">AI-Powered Student Clustering & Intelligent Job Shortlisting</h1>
+        <p class="hero-subtitle">
+          Transform campus recruitment with unsupervised machine learning. Group student profiles by true multi-dimensional competency clusters, benchmark validation metrics, and parse corporate Job Descriptions in seconds to generate explainable candidate shortlists.
+        </p>
+        <div class="hero-cta-group">
+          <button class="btn" onclick="switchNav('match')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/></svg>
+            Match a Job Description
+          </button>
+          <button class="btn g" onclick="switchNav('students')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Manage Student Profiles
+          </button>
+          <button class="btn g" onclick="switchNav('clusters')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06"/></svg>
+            Explore 2D Skill Clusters
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-4" style="margin-bottom:28px">
+        <div class="stat-card">
+          <div class="stat-icon indigo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="stat-val" id="home-stat-students">1,000</div>
+            <div class="stat-lbl">Active Candidates</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon cyan">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <div>
+            <div class="stat-val" id="home-stat-skills">18</div>
+            <div class="stat-lbl">Technical Skills Mapped</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+          </div>
+          <div>
+            <div class="stat-val">4</div>
+            <div class="stat-lbl">ML Clustering Models</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon emerald">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <div class="stat-val">&lt; 15ms</div>
+            <div class="stat-lbl">Shortlisting Latency</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Matrix -->
+      <div class="card-title" style="font-size:18px; margin-bottom:16px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Platform Capabilities
+      </div>
+      <div class="grid grid-2" style="margin-bottom:28px">
+        <div class="feat-card" onclick="switchNav('clusters')">
+          <div class="feat-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 0"/></svg>
+          </div>
+          <div class="feat-title">Unsupervised Talent Archetypes</div>
+          <div class="feat-desc">Groups students into high-affinity clusters using K-Means, Ward Hierarchical, GMM, and DBSCAN algorithms. Profiles emerging talent without human bias.</div>
+        </div>
+
+        <div class="feat-card" onclick="switchNav('match')">
+          <div class="feat-icon-box" style="background:rgba(6, 182, 212, 0.16); color:#22d3ee">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="feat-title">JSON / File Job Description Ingestion</div>
+          <div class="feat-desc">Upload corporate Job Description JSON or text files. The engine automatically extracts skills, target proficiencies, CGPA cutoffs, and backlog filters.</div>
+        </div>
+
+        <div class="feat-card" onclick="switchNav('compare')">
+          <div class="feat-icon-box" style="background:rgba(192, 132, 252, 0.16); color:#d8b4fe">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="feat-title">Model Benchmarking & Validation</div>
+          <div class="feat-desc">Rigorous internal validation scores (Silhouette, Davies-Bouldin, Calinski-Harabasz, ARI) to ensure mathematical robustness and cluster quality.</div>
+        </div>
+
+        <div class="feat-card" onclick="switchNav('match')">
+          <div class="feat-icon-box" style="background:rgba(16, 185, 129, 0.16); color:#34d399">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="feat-title">Transparent Explainable Shortlists</div>
+          <div class="feat-desc">Every candidate recommendation includes explicit explainability strings, matching skill highlights, missing competency gap tags, and cluster alignment.</div>
+        </div>
+      </div>
+
+      <!-- How It Works Flow -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          System Pipeline Workflow
+        </div>
+        <div class="grid grid-4" style="text-align:center; margin-top:14px">
+          <div style="padding:16px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid var(--bd)">
+            <b style="color:var(--primary-light)">1. Ingest & Scale</b>
+            <p style="font-size:12.5px; color:var(--tx-muted); margin-top:6px">Clean data, median imputation, StandardScaler on 18 technical skill dimensions.</p>
+          </div>
+          <div style="padding:16px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid var(--bd)">
+            <b style="color:var(--accent-cyan)">2. Unsupervised Clusters</b>
+            <p style="font-size:12.5px; color:var(--tx-muted); margin-top:6px">K-Means, Ward Hierarchical & GMM discovery. 2D PCA projection for inspection.</p>
+          </div>
+          <div style="padding:16px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid var(--bd)">
+            <b style="color:var(--accent-purple)">3. Ingest Corporate JD</b>
+            <p style="font-size:12.5px; color:var(--tx-muted); margin-top:6px">Parse JSON requirements or raw text to extract required skills, CGPA & backlogs.</p>
+          </div>
+          <div style="padding:16px; background:rgba(255,255,255,0.02); border-radius:12px; border:1px solid var(--bd)">
+            <b style="color:var(--success)">4. Rank & Explain</b>
+            <p style="font-size:12.5px; color:var(--tx-muted); margin-top:6px">65% Skill Fit + 15% CGPA + 10% Experience + 10% Aptitude with gap analysis.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. STUDENT DIRECTORY & DATA MANAGEMENT SCREEN -->
+    <section id="screen-students" class="screen">
+      <div class="screen-header">
+        <span class="screen-tag">Candidate Profiles & Management</span>
+        <h2 class="screen-title">Student Directory & Ingestion</h2>
+        <p class="screen-desc">Manage candidate records, upload institutional placement CSVs, add custom student profiles dynamically, and search technical profiles.</p>
+      </div>
+
+      <!-- Quick Stats & Ingestion Bar -->
+      <div class="grid grid-4" id="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon indigo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div><div class="stat-val" id="stat-count">-</div><div class="stat-lbl">Total Students</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon cyan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+          <div><div class="stat-val" id="stat-skills">-</div><div class="stat-lbl">Mapped Skills</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><div class="stat-val" id="stat-cgpa">-</div><div class="stat-lbl">Average CGPA</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon emerald"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg></div>
+          <div><div class="stat-val" id="stat-branches">-</div><div class="stat-lbl">Branches Represented</div></div>
+        </div>
+      </div>
+
+      <!-- Controls & CSV Upload Card -->
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <input type="file" id="csv-file-input" accept=".csv" style="display:none">
+            <button class="btn g" onclick="$('#csv-file-input').click()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload New CSV
+            </button>
+            <button class="btn g" id="btn-load-sample">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Reload Sample (1,000 Students)
+            </button>
+            <small id="csv-load-status" style="color:var(--tx-muted); font-size:12.5px"></small>
+          </div>
+          <div>
+            <button class="btn btn-accent" id="btn-open-add-modal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              + Add Custom Candidate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Search & Candidate Directory Table -->
+      <div class="card">
+        <div class="row" style="justify-content:space-between; margin-bottom:16px">
+          <div class="row" style="flex:1; max-width:600px">
+            <input type="text" id="student-search-input" placeholder="Search candidate by name or Student ID (e.g. Omkar, STU0001)..." style="flex:1">
+            <select id="student-branch-select" style="width:140px">
+              <option value="all">All Branches</option>
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="MECH">MECH</option>
+            </select>
+          </div>
+          <div style="font-size:13px; color:var(--tx-muted)" id="student-table-count">Showing candidates...</div>
+        </div>
+
+        <div class="table-container">
+          <table id="student-directory-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Candidate Name</th>
+                <th>Branch</th>
+                <th>CGPA</th>
+                <th>Backlogs</th>
+                <th>Experience</th>
+                <th>Aptitude</th>
+                <th>Top Competencies</th>
+              </tr>
+            </thead>
+            <tbody id="student-directory-tbody">
+              <!-- Dynamically populated via /api/students -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CLUSTERING & 2D PCA SCREEN -->
+    <section id="screen-clusters" class="screen">
+      <div class="screen-header">
+        <span class="screen-tag">Unsupervised Machine Learning</span>
+        <h2 class="screen-title">Skill Profile Clustering & 2D PCA</h2>
+        <p class="screen-desc">Candidate profiles grouped by 18 technical skill dimensions. Principal Component Analysis (PCA) projects high-dimensional vectors to 2D for interactive visual inspection.</p>
+      </div>
+
+      <div class="card row" style="justify-content:space-between">
+        <div class="row">
+          <label style="font-weight:600; font-size:13.5px">Algorithm:
+            <select id="alg-select" style="margin-left:8px">
+              <option value="kmeans">K-Means</option>
+              <option value="hierarchical">Hierarchical (Ward)</option>
+              <option value="gmm">Gaussian Mixture (GMM)</option>
+              <option value="dbscan">DBSCAN (Density-Based)</option>
+            </select>
+          </label>
+          <label style="font-weight:600; font-size:13.5px">Clusters (k): <b id="k-val-display" style="color:var(--primary-light)">8</b>
+            <input type="range" id="k-slider" min="2" max="12" value="8" style="vertical-align:middle; margin-left:8px">
+          </label>
+          <button id="btn-run-cluster">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Re-run Clustering
+          </button>
+        </div>
+        <div id="cluster-metrics-chips" class="row"></div>
+      </div>
+
+      <div class="card" style="height:440px; position:relative">
+        <canvas id="cluster-scatter-canvas"></canvas>
+      </div>
+
+      <div class="card-title" style="margin-top:24px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>
+        Discovered Cluster Profiles
+      </div>
+      <div class="grid grid-4" id="cluster-cards-grid"></div>
+    </section>
+
+    <!-- 4. MODEL BENCHMARK SCREEN -->
+    <section id="screen-compare" class="screen">
+      <div class="screen-header">
+        <span class="screen-tag">Model Evaluation & Optimization</span>
+        <h2 class="screen-title">Clustering Algorithms Benchmark</h2>
+        <p class="screen-desc">Compare internal validity metrics on identical standardized features to select the optimal model for production matching.</p>
+      </div>
+
+      <div class="card row" style="justify-content:space-between">
+        <button id="btn-run-compare">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Run Full Benchmark
+        </button>
+        <small style="color:var(--tx-muted)">Highlights highest Silhouette ↑ and lowest Davies-Bouldin ↓ index</small>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table id="benchmark-table">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Discovered Clusters</th>
+                <th>Silhouette Score (↑)</th>
+                <th>Davies-Bouldin Index (↓)</th>
+                <th>Calinski-Harabasz (↑)</th>
+                <th>ARI vs Truth (↑)</th>
+                <th>Noise Outliers</th>
+                <th>Compute Time</th>
+              </tr>
+            </thead>
+            <tbody id="benchmark-tbody">
+              <!-- Dynamically populated via /api/compare -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="height:320px">
+        <div class="card-title">Optimal Cluster Scan (Elbow Inertia vs Silhouette Score)</div>
+        <canvas id="elbow-chart-canvas"></canvas>
+      </div>
+    </section>
+
+    <!-- 5. JOB DESCRIPTION MATCH & SHORTLISTING SCREEN -->
+    <section id="screen-match" class="screen">
+      <div class="screen-header">
+        <span class="screen-tag">Corporate Hiring & Matching Engine</span>
+        <h2 class="screen-title">Job Description Matching Engine</h2>
+        <p class="screen-desc">Upload corporate Job Description JSON or text files. The ML model automatically parses requirements, evaluates cluster relevance, and calculates transparent candidate shortlists.</p>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; margin-bottom:12px">
+          <div class="row">
+            <span style="font-size:13px; font-weight:700; color:var(--tx-muted)">Quick Presets:</span>
+            <button class="btn g" data-preset="web">Full Stack</button>
+            <button class="btn g" data-preset="ds">Data Scientist</button>
+            <button class="btn g" data-preset="cloud">DevOps</button>
+            <button class="btn g" data-preset="be">Java Backend</button>
+            <button class="btn g" data-preset="iot">Embedded IoT</button>
+          </div>
+          <div>
+            <input type="file" id="jd-file-upload" accept=".json,.txt" style="display:none">
+            <button class="btn g" onclick="$('#jd-file-upload').click()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload JD File (.json, .txt)
+            </button>
+          </div>
+        </div>
+
+        <textarea id="jd-textarea" class="json-box" placeholder="Upload a JD file or paste Job Description JSON / requirements text here..."></textarea>
+        
+        <div id="jd-parsed-meta" class="card" style="display:none; background:#0b1122; border-color:var(--bd-glow); margin:12px 0 6px; padding:14px"></div>
+
+        <div class="row" style="margin-top:14px; justify-content:space-between">
+          <div class="row">
+            <label style="font-size:13px; display:flex; align-items:center; gap:6px; cursor:pointer">
+              <input type="checkbox" id="check-relevant-clusters" checked>
+              <span>Target relevant clusters only</span>
+            </label>
+            <button class="btn" id="btn-run-match">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/></svg>
+              🎯 Generate Candidate Shortlist
+            </button>
+            <button class="btn g" id="btn-export-shortlist">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+          </div>
+          <small id="jd-match-status" style="color:var(--tx-muted); font-size:12.5px"></small>
+        </div>
+      </div>
+
+      <!-- Cluster Relevance Cards -->
+      <div id="cluster-relevance-card" class="card" style="display:none"></div>
+
+      <!-- Shortlist Results Table -->
+      <div class="card">
+        <div id="shortlist-summary-banner" style="font-size:14px; color:var(--tx-muted); margin-bottom:14px"></div>
+        <div class="table-container">
+          <table id="shortlist-table">
+            <thead>
+              <tr>
+                <th style="width:50px">#</th>
+                <th>Candidate Profile</th>
+                <th>Match Score</th>
+                <th>Cluster Profile</th>
+                <th>Skill Gap & Reason for Recommendation</th>
+              </tr>
+            </thead>
+            <tbody id="shortlist-tbody">
+              <!-- Shortlisted candidates -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ADD CANDIDATE MODAL WINDOW -->
+  <div class="modal-backdrop" id="add-student-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Add New Student Profile</h3>
+        <button class="modal-close" onclick="closeAddModal()">&times;</button>
+      </div>
+
+      <form id="add-student-form" onsubmit="handleStudentSubmit(event)">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Student ID</label>
+            <input type="text" id="add-id" placeholder="e.g. STU1001" required>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="add-name" placeholder="e.g. Aarav Mehta" required>
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Branch</label>
+            <select id="add-branch">
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="MECH">MECH</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CGPA</label>
+            <input type="number" id="add-cgpa" min="0" max="10" step="0.01" value="7.5" required>
+          </div>
+          <div class="form-group">
+            <label>Active Backlogs</label>
+            <input type="number" id="add-backlogs" min="0" max="10" value="0" required>
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Projects Completed</label>
+            <input type="number" id="add-projects" min="0" max="10" value="2">
+          </div>
+          <div class="form-group">
+            <label>Internships</label>
+            <input type="number" id="add-internships" min="0" max="10" value="1">
+          </div>
+          <div class="form-group">
+            <label>Aptitude Score (0-100)</label>
+            <input type="number" id="add-aptitude" min="0" max="100" value="70">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Technical Skill Proficiencies (Scale 0 - 5)</label>
+          <div class="skill-slider-grid" id="modal-skills-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="row" style="justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn g" onclick="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-accent">Register & Update ML Model</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const C = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#3b82f6', '#84cc16'];
+    
+    // Global API Helper
+    const api = async (url, body, formData) => {
+      const opts = formData ? { method: 'POST', body: formData } : {
+        method: body ? 'POST' : 'GET',
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined
+      };
+      const res = await fetch(url, opts);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Server request failed');
+      return json;
+    };
+
+    let charts = {}, globalSkills = [], shortlistRows = [];
+    const renderChart = (id, cfg) => {
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart($(id), cfg);
+    };
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+    // Navigation Switcher
+    const switchNav = (targetId) => {
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.toggle('on', el.dataset.target === targetId);
+      });
+      document.querySelectorAll('.screen').forEach(el => {
+        el.classList.toggle('on', el.id === `screen-${targetId}`);
+      });
+      if (targetId === 'students') loadStudentDirectory();
+      if (targetId === 'clusters' && !charts['cluster-scatter-canvas']) $('#btn-run-cluster').click();
+      if (targetId === 'compare' && !charts['elbow-chart-canvas']) $('#btn-run-compare').click();
+    };
+
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.onclick = () => switchNav(el.dataset.target);
+    });
+
+    // Populate Initial Metrics
+    const updateStatsDisplay = (data) => {
+      globalSkills = data.skills || [];
+      $('#stat-count').textContent = data.n.toLocaleString();
+      $('#stat-skills').textContent = data.skills.length;
+      $('#stat-cgpa').textContent = data.cgpa;
+      $('#stat-branches').textContent = Object.keys(data.branches || {}).length;
+      
+      $('#home-stat-students').textContent = data.n.toLocaleString();
+      $('#home-stat-skills').textContent = data.skills.length;
+
+      // Populate Modal Skills
+      $('#modal-skills-grid').innerHTML = globalSkills.map(s => `
+        <div class="skill-slider-item">
+          <span>${s.replace(/_/g, ' ')} <b id="val-${s}">2</b></span>
+          <input type="range" min="0" max="5" value="2" data-skill="${s}" oninput="$('#val-${s}').textContent=this.value" style="width:100%">
+        </div>
+      `).join('');
+    };
+
+    // Load Dataset
+    const loadDataset = async (formData) => {
+      try {
+        $('#csv-load-status').textContent = 'Loading dataset...';
+        const res = await api('/api/load', null, formData);
+        updateStatsDisplay(res);
+        $('#csv-load-status').textContent = '✓ Dataset loaded successfully';
+        loadStudentDirectory();
+      } catch (err) {
+        $('#csv-load-status').textContent = '✗ ' + err.message;
+      }
+    };
+
+    $('#btn-load-sample').onclick = () => loadDataset(new FormData());
+    $('#csv-file-input').onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('file', file);
+      loadDataset(fd);
+    };
+
+    // Student Directory Search & Table
+    const loadStudentDirectory = async () => {
+      const q = $('#student-search-input').value;
+      const b = $('#student-branch-select').value;
+      try {
+        const res = await api(`/api/students?q=${encodeURIComponent(q)}&branch=${encodeURIComponent(b)}&limit=50`);
+        $('#student-table-count').textContent = `Showing ${res.students.length} of ${res.total} students`;
+        $('#student-directory-tbody').innerHTML = res.students.map(s => `
+          <tr>
+            <td><code style="color:var(--primary-light)">${s.student_id}</code></td>
+            <td><b>${s.name}</b></td>
+            <td><span class="pill">${s.branch}</span></td>
+            <td><b style="color:${s.cgpa >= 7.5 ? 'var(--success)' : 'var(--tx)'}">${s.cgpa.toFixed(2)}</b></td>
+            <td><span class="pill ${s.backlogs > 0 ? 'miss' : ''}">${s.backlogs}</span></td>
+            <td style="font-size:12px; color:var(--tx-muted)">${s.num_projects} proj · ${s.internships} intern</td>
+            <td><span class="pill" style="background:#131d38">${s.aptitude_score}</span></td>
+            <td>${s.top_skills.map(sk => `<span class="pill pill-highlight">${sk}</span>`).join('')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error fetching students:', err);
+      }
+    };
+
+    $('#student-search-input').oninput = loadStudentDirectory;
+    $('#student-branch-select').onchange = loadStudentDirectory;
+
+    // Modal Add Student
+    const closeAddModal = () => $('#add-student-modal').classList.remove('open');
+    $('#btn-open-add-modal').onclick = () => $('#add-student-modal').classList.add('open');
+
+    const handleStudentSubmit = async (e) => {
+      e.preventDefault();
+      const studentPayload = {
+        student_id: $('#add-id').value.trim(),
+        name: $('#add-name').value.trim(),
+        branch: $('#add-branch').value,
+        cgpa: parseFloat($('#add-cgpa').value),
+        backlogs: parseInt($('#add-backlogs').value),
+        num_projects: parseInt($('#add-projects').value),
+        internships: parseInt($('#add-internships').value),
+        aptitude_score: parseFloat($('#add-aptitude').value),
+      };
+
+      document.querySelectorAll('#modal-skills-grid input').forEach(input => {
+        studentPayload[input.dataset.skill] = parseInt(input.value);
+      });
+
+      try {
+        const res = await api('/api/add_student', studentPayload);
+        alert(`✓ Candidate ${studentPayload.name} successfully registered!`);
+        closeAddModal();
+        loadStudentDirectory();
+      } catch (err) {
+        alert('Error adding student: ' + err.message);
+      }
+    };
+
+    // Clustering Engine
+    $('#k-slider').oninput = e => $('#k-val-display').textContent = e.target.value;
+    $('#btn-run-cluster').onclick = async () => {
+      $('#btn-run-cluster').textContent = 'Computing...';
+      try {
+        const res = await api('/api/cluster', { algo: $('#alg-select').value, k: $('#k-slider').value });
+        $('#cluster-metrics-chips').innerHTML = res.metrics
+          ? Object.entries(res.metrics).map(([k, v]) => `<span class="pill pill-highlight">${k}: <b>${v}</b></span>`).join('')
+          : '<span class="pill miss">Low cluster resolution</span>';
+
+        const clusterIds = [...new Set(res.points.map(p => p[2]))].sort((a, b) => a - b);
+        renderChart('cluster-scatter-canvas', {
+          type: 'scatter',
+          data: {
+            datasets: clusterIds.map(c => ({
+              label: (res.clusters.find(x => x.id === c) || {}).name || `Cluster ${c}`,
+              data: res.points.filter(p => p[2] === c).map(p => ({ x: p[0], y: p[1], id: p[3] })),
+              backgroundColor: c < 0 ? '#475569' : C[c % C.length] + 'cc',
+              pointRadius: 4.5,
+              hoverRadius: 7
+            }))
+          },
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              tooltip: { callbacks: { label: t => `${t.dataset.label} · ID: ${t.raw.id}` } }
+            },
+            scales: {
+              x: { title: { display: true, text: 'Principal Component 1 (PC1)', color: '#818cf8' } },
+              y: { title: { display: true, text: 'Principal Component 2 (PC2)', color: '#818cf8' } }
+            }
+          }
+        });
+
+        $('#cluster-cards-grid').innerHTML = res.clusters.map(c => `
+          <div class="card" style="border-left:4px solid ${c.id < 0 ? '#64748b' : C[c.id % C.length]}">
+            <b style="color:${c.id < 0 ? '#94a3b8' : C[c.id % C.length]}; font-size:14px">● ${c.name}</b>
+            <div style="font-size:12px; color:var(--tx-muted); margin:4px 0 8px">${c.size} candidates · avg CGPA ${c.cgpa}</div>
+            <div>${c.top.map(t => `<span class="pill">${t}</span>`).join('')}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        alert('Clustering error: ' + err.message);
+      } finally {
+        $('#btn-run-cluster').textContent = 'Re-run Clustering';
+      }
+    };
+
+    // Benchmark Engine
+    $('#btn-run-compare').onclick = async () => {
+      $('#btn-run-compare').textContent = 'Evaluating models...';
+      try {
+        const res = await api('/api/compare', { k: $('#k-slider').value });
+        const list = res.results;
+        const maxSil = Math.max(...list.map(r => r.silhouette || -1));
+        const minDb = Math.min(...list.map(r => r.davies_bouldin || 99));
+
+        $('#benchmark-tbody').innerHTML = list.map(r => `
+          <tr>
+            <td><b style="color:var(--tx)">${r.algo.toUpperCase()}</b></td>
+            <td>${r.clusters ?? '-'}</td>
+            <td style="${r.silhouette === maxSil ? 'color:var(--success); font-weight:700' : ''}">${r.silhouette ?? '-'}</td>
+            <td style="${r.davies_bouldin === minDb ? 'color:var(--success); font-weight:700' : ''}">${r.davies_bouldin ?? '-'}</td>
+            <td>${r.calinski ?? '-'}</td>
+            <td>${r.ari ?? '-'}</td>
+            <td>${r.noise ?? 0}</td>
+            <td><code style="color:var(--tx-muted)">${r.time}s</code></td>
+          </tr>
+        `).join('');
+
+        renderChart('elbow-chart-canvas', {
+          type: 'line',
+          data: {
+            labels: res.scan.map(s => 'k=' + s.k),
+            datasets: [
+              { label: 'Silhouette Score', data: res.scan.map(s => s.silhouette), borderColor: '#10b981', yAxisID: 'y' },
+              { label: 'Inertia (Elbow)', data: res.scan.map(s => s.inertia), borderColor: '#6366f1', yAxisID: 'y1' }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            scales: {
+              y: { position: 'left', title: { display: true, text: 'Silhouette' } },
+              y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Inertia' } }
+            }
+          }
+        });
+      } catch (err) {
+        alert('Benchmark error: ' + err.message);
+      } finally {
+        $('#btn-run-compare').textContent = 'Run Full Benchmark';
+      }
+    };
+
+    // Job Matching Presets
+    const JD_PRESETS = {
+      web: {
+        job_title: "Full Stack Software Engineer",
+        company: "TechCorp Global",
+        min_cgpa: 7.0,
+        max_backlogs: 0,
+        relevant_clusters_only: true,
+        skills: { JavaScript: 4, React: 4, NodeJS: 3, HTML_CSS: 4, SQL: 3, Git: 3 }
+      },
+      ds: {
+        job_title: "Data Scientist & AI Specialist",
+        company: "Cognitive Intelligence Labs",
+        min_cgpa: 7.5,
+        max_backlogs: 0,
+        relevant_clusters_only: true,
+        skills: { Python: 4, Machine_Learning: 4, Deep_Learning: 3, Data_Analysis: 4, SQL: 3 }
+      },
+      cloud: {
+        job_title: "Cloud & DevOps Systems Engineer",
+        company: "CloudScale Infrastructure",
+        min_cgpa: 6.8,
+        max_backlogs: 0,
+        relevant_clusters_only: true,
+        skills: { AWS: 4, Docker_DevOps: 4, Git: 3, Python: 3, SQL: 2 }
+      },
+      be: {
+        job_title: "Enterprise Java Backend Developer",
+        company: "Apex FinTech Systems",
+        min_cgpa: 7.0,
+        max_backlogs: 0,
+        relevant_clusters_only: true,
+        skills: { Java: 4, SQL: 4, DSA: 4, Git: 3 }
+      },
+      iot: {
+        job_title: "Embedded Systems & IoT Hardware Engineer",
+        company: "Semiconductor Labs",
+        min_cgpa: 6.5,
+        max_backlogs: 1,
+        relevant_clusters_only: true,
+        skills: { Embedded_C_IoT: 4, Cpp: 3, Python: 2, Git: 2 }
+      }
+    };
+
+    const updateParsedJDMeta = () => {
+      const val = $('#jd-textarea').value.trim();
+      const meta = $('#jd-parsed-meta');
+      if (!val) { meta.style.display = 'none'; return; }
+      try {
+        const j = JSON.parse(val);
+        const sk = j.skills || {};
+        const skList = Array.isArray(sk) ? sk : Object.keys(sk);
+        meta.style.display = 'block';
+        meta.innerHTML = `
+          <div style="font-weight:700; color:#c084fc; font-size:14px; margin-bottom:6px">
+            📋 ${j.job_title || 'Custom Role'} ${j.company ? '· ' + j.company : ''}
+          </div>
+          <div class="row" style="margin-bottom:6px">
+            <span class="pill pill-highlight">🎯 Min CGPA: <b>${j.min_cgpa ?? 'None'}</b></span>
+            <span class="pill pill-highlight">🚫 Max Backlogs: <b>${j.max_backlogs ?? 0}</b></span>
+            <span class="pill pill-highlight">⚙️ Required Competencies: <b>${skList.length}</b></span>
+          </div>
+          <div>${skList.map(k => `<span class="pill pill-success">${k}${sk[k] ? ' (' + sk[k] + '/5)' : ''}</span>`).join('')}</div>
+        `;
+      } catch (e) {
+        meta.style.display = 'block';
+        meta.innerHTML = `<small style="color:var(--tx-muted)">📄 Unstructured / Text JD detected. The ML model will automatically identify required technical skills and cutoffs.</small>`;
+      }
+    };
+
+    $('#jd-textarea').oninput = updateParsedJDMeta;
+
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+      btn.onclick = () => {
+        const p = JD_PRESETS[btn.dataset.preset];
+        if (p) {
+          $('#jd-textarea').value = JSON.stringify(p, null, 2);
+          updateParsedJDMeta();
+          $('#jd-match-status').textContent = `✓ Loaded preset: ${p.job_title}`;
+        }
+      };
+    });
+
+    $('#jd-file-upload').onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        $('#jd-textarea').value = evt.target.result;
+        updateParsedJDMeta();
+        $('#jd-match-status').textContent = `✓ Ingested file: ${file.name}`;
+      };
+      reader.readAsText(file);
+    };
+
+    // Run Match
+    $('#btn-run-match').onclick = async () => {
+      const text = $('#jd-textarea').value.trim();
+      if (!text) {
+        alert('Please select a preset, upload a JD file, or paste your Job Description JSON/text.');
+        return;
+      }
+      $('#btn-run-match').textContent = 'Matching…';
+      try {
+        let payload;
+        try { payload = JSON.parse(text); } catch (_) { payload = { raw_text: text }; }
+        payload.relevant_only = $('#check-relevant-clusters').checked;
+
+        const res = await api('/api/match', payload);
+        shortlistRows = res.rows;
+
+        // Render Cluster Relevance
+        $('#cluster-relevance-card').style.display = 'block';
+        $('#cluster-relevance-card').innerHTML = `
+          <div class="card-title">Cluster Fit Alignment to Job Profile</div>
+          <div>${res.clusters.map(c => `
+            <span class="pill" style="${c.relevant ? 'background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.4); color:#6ee7b7' : 'opacity:0.6'}">
+              ${c.name}: <b>${c.fit}%</b>${c.relevant ? ' ✓ Target' : ''}
+            </span>
+          `).join('')}</div>
+        `;
+
+        const jInfo = res.job_info || {};
+        $('#shortlist-summary-banner').innerHTML = `
+          <b style="color:var(--tx)">${jInfo.title || 'Target Role'}</b> — ${res.eligible} of ${res.total} candidates eligible · Showing top ${shortlistRows.length} ranked students
+        `;
+
+        // Render Shortlist Rows
+        $('#shortlist-tbody').innerHTML = shortlistRows.map((r, i) => `
+          <tr>
+            <td><b style="color:var(--primary-light)">#${i + 1}</b></td>
+            <td>
+              <b>${r.name}</b>
+              <div style="font-size:12px; color:var(--tx-muted)"><code style="color:var(--tx-dim)">${r.id}</code> · ${r.branch} · CGPA <b>${r.cgpa.toFixed(2)}</b></div>
+            </td>
+            <td>
+              <b style="font-size:15px; color:var(--success)">${r.score}%</b>
+              <div class="bar"><i style="width:${r.score}%"></i></div>
+            </td>
+            <td><span class="pill pill-highlight">${r.cluster_name}</span></td>
+            <td>
+              <div>${r.missing.map(m => `<span class="pill miss">${m.skill} (has ${m.has}/${m.need})</span>`).join('') || '<span class="pill pill-success">All Required Skills Met ✓</span>'}</div>
+              <div style="font-size:12px; color:var(--tx-muted); margin-top:4px">${r.why}</div>
+            </td>
+          </tr>
+        `).join('');
+
+        $('#jd-match-status').textContent = '✓ Matching complete';
+      } catch (err) {
+        alert('Match error: ' + err.message);
+      } finally {
+        $('#btn-run-match').textContent = '🎯 Generate Candidate Shortlist';
+      }
+    };
+
+    // Export Shortlist CSV
+    $('#btn-export-shortlist').onclick = () => {
+      if (!shortlistRows.length) {
+        alert('No candidates shortlisted yet. Run a match first!');
+        return;
+      }
+      const q = v => `"${String(v).replace(/"/g, '""')}"`;
+      const headers = ['Rank', 'Student_ID', 'Candidate_Name', 'Branch', 'CGPA', 'Match_Score', 'Cluster', 'Skill_Gaps', 'Explanation'];
+      const csvContent = [
+        headers.map(q).join(','),
+        ...shortlistRows.map((r, i) => [
+          i + 1, r.id, r.name, r.branch, r.cgpa, r.score, r.cluster_name,
+          r.missing.map(m => `${m.skill} ${m.has}/${m.need}`).join('; ') || 'None',
+          r.why
+        ].map(q).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'smart_placement_shortlist.csv';
+      a.click();
+    };
+
+    // Auto-initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDataset(new FormData());
+      $('#jd-textarea').value = JSON.stringify(JD_PRESETS.web, null, 2);
+      updateParsedJDMeta();
+    });
+  </script>
+</body>
+</html>

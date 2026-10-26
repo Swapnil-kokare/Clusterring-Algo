@@ -1,0 +1,14 @@
+{
+  "job_title": "Data Scientist & AI Specialist",
+  "company": "Cognitive Analytics",
+  "min_cgpa": 7.5,
+  "max_backlogs": 0,
+  "relevant_clusters_only": true,
+  "skills": {
+    "Python": 4,
+    "Machine_Learning": 4,
+    "Deep_Learning": 3,
+    "Data_Analysis": 4,
+    "SQL": 3
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "job_title": "Cloud & DevOps Engineer",
+  "company": "CloudScale Global",
+  "min_cgpa": 6.8,
+  "max_backlogs": 0,
+  "relevant_clusters_only": true,
+  "skills": {
+    "AWS": 4,
+    "Docker_DevOps": 4,
+    "Git": 3,
+    "Python": 3,
+    "SQL": 2
+  }
+}
